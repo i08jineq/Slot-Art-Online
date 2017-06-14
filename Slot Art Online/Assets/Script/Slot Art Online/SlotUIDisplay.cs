@@ -71,10 +71,11 @@ namespace DarkLordGame {
 
             for(int i = 0; i < this.imageList.Count; i++) {
                 IntVector2 pos = position + i * this.slotItemSize;
-                pos.X = pos.X % maxDistance.X * dx;
-                pos.Y = pos.Y % maxDistance.Y * dy;
+                pos.X = MathHelper.Mod(pos.X, maxDistance.X) * dx;
+                pos.Y = MathHelper.Mod(pos.Y, maxDistance.Y) * dy;
                 this.imageList[i].transform.localPosition = (Vector2)pos;
             }
         }
+
     }
 }

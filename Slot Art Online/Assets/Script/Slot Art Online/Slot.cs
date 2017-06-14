@@ -13,6 +13,7 @@ namespace DarkLordGame {
         public ASlotDisplay slotDisplay{get; private set;}
         private int currentCenterObjectIndex;
         private int centerOffset;
+        private int maxDistance;
 
         public Slot(List<int> slotItem, IntVector2 speed, bool useHorizontal, IntVector2 itemSize, int centerOffset = 0) {
             this.SlotItem = slotItem;
@@ -22,6 +23,7 @@ namespace DarkLordGame {
             this.CurrentPosition = new IntVector2(0, 0);
             this.CurrentCenterIndex = centerOffset;
             this.centerOffset = centerOffset;
+            this.maxDistance = useHorizontal ? itemSize.X * slotItem.Count : itemSize.Y * slotItem.Count;
         }
 
 
@@ -47,6 +49,9 @@ namespace DarkLordGame {
         }
 
         public IEnumerator SpinCoroutine() {
+            if(this.isSpinning) {
+                yield break;
+            }
             this.isSpinning = true;
             while(this.isSpinning) {
                 this.CurrentPosition = this.CurrentPosition + this.spiningSpeed;
@@ -67,7 +72,10 @@ namespace DarkLordGame {
         }
 
         private void Snapping(int currentDistance, int sizeLength) {
-            this.CurrentCenterIndex = (currentDistance + sizeLength / 2) / sizeLength + this.centerOffset; 
+            this.CurrentCenterIndex = (MathHelper.Mod(currentDistance, this.maxDistance) + sizeLength / 2) / sizeLength + this.centerOffset; 
+            if(this.slotDisplay != null) {
+                this.slotDisplay.UpdatePosition(this.CurrentPosition);
+            }
         }
 
         public void SetVisible(bool visible) {
@@ -82,7 +90,7 @@ namespace DarkLordGame {
                 return this.SlotItem[(this.CurrentCenterIndex + max) % this.SlotItem.Count];
             }
             int min = Mathf.Max(offset, -this.SlotItem.Count);
-            return this.SlotItem[(this.CurrentCenterIndex + min + this.SlotItem.Count)];
+            return this.SlotItem[(this.CurrentCenterIndex + min + this.SlotItem.Count) % this.SlotItem.Count];
             
         }
     }

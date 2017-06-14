@@ -9,9 +9,12 @@ namespace DarkLordGame {
 
 
         [SerializeField]private int spinningSpeed;
+        [SerializeField]private bool useShuffleSpeed = true;
 
         [SerializeField]private SlotUIDisplay displayPrefab;
         [SerializeField]private bool AlignHorizontal;//else vertical
+
+
 
         //for easy debuging
         [ReadOnlyAttribute][SerializeField]private int SlotNumbers;
@@ -20,10 +23,9 @@ namespace DarkLordGame {
         [ReadOnlyAttribute][SerializeField]private List<int> slotItemModel;
         [ReadOnlyAttribute][SerializeField]private IntVector2 speedVector;
         [SerializeField]private int positionOffset = 3;
-        void Start() {
-            this.Init();//test
-        }
 
+        //for stoping
+        [SerializeField]private float stopingDelay = 0.1f;
         public void Init() {
             this.SlotNumbers = 3;
             this.addAlignmentLayout();
@@ -38,12 +40,12 @@ namespace DarkLordGame {
                 this.CreatedSlot.Add(this.CreateSlot());
             }
             this.ShuffleAll();
-            for(int i = 0; i < this.SlotNumbers; i++) {
-                StartCoroutine( this.CreatedSlot[i].SpinCoroutine());
-            }
         }
 
         private Slot CreateSlot() {
+            if(this.useShuffleSpeed) {
+                this.speedVector = -this.speedVector;
+            }
             Slot slot = new Slot(this.slotItemModel, this.speedVector, !this.AlignHorizontal, this.slotSize);
             SlotUIDisplay display = Instantiate<SlotUIDisplay>(displayPrefab, this.transform);
 
@@ -104,6 +106,23 @@ namespace DarkLordGame {
                 for(int j = 0; j < itemNumber.Count; j++) {
                     this.CreatedSlot[i].slotDisplay.UpdateImageAt(j, this.imageList[itemNumber[j]]);
                 }
+            }
+        }
+
+        public void StartSpinningAll() {
+            for(int i = 0; i < this.CreatedSlot.Count; i++) {
+                StartCoroutine(this.CreatedSlot[i].SpinCoroutine());
+            }
+        }
+
+        public void StopSpinningAll() {
+            StartCoroutine(this.stopSpinningCoroutine());
+        }
+
+        private IEnumerator stopSpinningCoroutine() {
+            for(int i = 0; i < this.CreatedSlot.Count; i++) {
+                this.CreatedSlot[i].StopSpining();
+                yield return new WaitForSeconds(this.stopingDelay);
             }
         }
     }
