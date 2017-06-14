@@ -11,9 +11,7 @@ namespace DarkLordGame {
 
         [SerializeField]private IntVector2 slotItemSize;// should be smaller than slow window
         public ASlotDisplay slotDisplay{get; private set;}
-        private int currentCenterObjectIndex;
         private int centerOffset;
-        private int maxDistance;
 
         public Slot(List<int> slotItem, IntVector2 speed, bool useHorizontal, IntVector2 itemSize, int centerOffset = 0) {
             this.SlotItem = slotItem;
@@ -23,7 +21,6 @@ namespace DarkLordGame {
             this.CurrentPosition = new IntVector2(0, 0);
             this.CurrentCenterIndex = centerOffset;
             this.centerOffset = centerOffset;
-            this.maxDistance = useHorizontal ? itemSize.X * slotItem.Count : itemSize.Y * slotItem.Count;
         }
 
 
@@ -65,14 +62,17 @@ namespace DarkLordGame {
         public void StopSpining() {
             this.isSpinning = false;
             if(this.useHorizontal) {
-                this.Snapping(this.CurrentPosition.X, this.slotItemSize.X);
+                this.Snapping(this.CurrentPosition.X, this.slotItemSize.X, this.SlotItem.Count);
                 return;
             }
-            this.Snapping(this.CurrentPosition.Y, this.slotItemSize.Y);
+            this.Snapping(this.CurrentPosition.Y, this.slotItemSize.Y, this.SlotItem.Count);
         }
 
-        private void Snapping(int currentDistance, int sizeLength) {
-            this.CurrentCenterIndex = (MathHelper.Mod(currentDistance, this.maxDistance) + sizeLength / 2) / sizeLength + this.centerOffset; 
+        private void Snapping(int currentDistance, int sizeLength, int maxSize) {
+            int modDistance = (MathHelper.Mod(currentDistance, maxSize));
+            this.CurrentCenterIndex = modDistance / sizeLength + this.centerOffset; 
+            this.CurrentPosition = (this.CurrentCenterIndex - centerOffset) * this.slotItemSize;
+
             if(this.slotDisplay != null) {
                 this.slotDisplay.UpdatePosition(this.CurrentPosition);
             }
