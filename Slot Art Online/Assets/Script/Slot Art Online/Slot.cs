@@ -5,19 +5,23 @@ using UnityEngine;
 namespace DarkLordGame {
     [System.Serializable]
     public class Slot {
-        [SerializeField]private List<int> slotItem;//list of item id
+        public List<int> SlotItem{get; private set;}//list of item id
         [SerializeField]private IntVector2 spiningSpeed;
         [SerializeField]private bool useHorizontal;
 
         [SerializeField]private IntVector2 slotItemSize;// should be smaller than slow window
+        public ASlotDisplay slotDisplay{get; private set;}
+        private int currentCenterObjectIndex;
+        private int centerOffset;
 
-        [SerializeField]private ASlotDisplay slotDisplay;
-
-        public Slot(List<int> slotItem, IntVector2 speed, bool useHorizontal, IntVector2 itemSize) {
-            this.slotItem = slotItem;
+        public Slot(List<int> slotItem, IntVector2 speed, bool useHorizontal, IntVector2 itemSize, int centerOffset = 0) {
+            this.SlotItem = slotItem;
             this.spiningSpeed = speed;
             this.useHorizontal = useHorizontal;
             this.slotItemSize = itemSize;
+            this.CurrentPosition = new IntVector2(0, 0);
+            this.CurrentCenterIndex = centerOffset;
+            this.centerOffset = centerOffset;
         }
 
 
@@ -34,18 +38,18 @@ namespace DarkLordGame {
         /// Shuffle this instance. for initialize
         /// </summary>
         public void Shuffle() {
-            for(int i = 0; i < this.slotItem.Count; i++) {
-                int index = Random.Range(0, this.slotItem.Count);
-                int temp = this.slotItem[index];
-                this.slotItem[index] = slotItem[i];
-                this.slotItem[i] = temp;
+            for(int i = 0; i < this.SlotItem.Count; i++) {
+                int index = Random.Range(0, this.SlotItem.Count);
+                int temp = this.SlotItem[index];
+                this.SlotItem[index] = SlotItem[i];
+                this.SlotItem[i] = temp;
             }
         }
 
         public IEnumerator SpinCoroutine() {
             this.isSpinning = true;
             while(this.isSpinning) {
-                this.CurrentPosition += this.spiningSpeed;
+                this.CurrentPosition = this.CurrentPosition + this.spiningSpeed;
                 if(this.slotDisplay != null) {
                     this.slotDisplay.UpdatePosition(this.CurrentPosition);
                 }
@@ -63,7 +67,23 @@ namespace DarkLordGame {
         }
 
         private void Snapping(int currentDistance, int sizeLength) {
-            this.CurrentCenterIndex = (currentDistance + sizeLength / 2) / sizeLength; 
+            this.CurrentCenterIndex = (currentDistance + sizeLength / 2) / sizeLength + this.centerOffset; 
+        }
+
+        public void SetVisible(bool visible) {
+            if(this.slotDisplay != null) {
+                this.slotDisplay.gameObject.SetActive(visible);
+            }
+        }
+
+        public int GetItemWithOffset(int offset = 0) {
+            if(0 <= offset) {
+                int max = Mathf.Min(offset, this.SlotItem.Count);
+                return this.SlotItem[(this.CurrentCenterIndex + max) % this.SlotItem.Count];
+            }
+            int min = Mathf.Max(offset, -this.SlotItem.Count);
+            return this.SlotItem[(this.CurrentCenterIndex + min + this.SlotItem.Count)];
+            
         }
     }
 }

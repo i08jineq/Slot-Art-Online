@@ -21,6 +21,10 @@ namespace DarkLordGame {
             return new IntVector2(v1.X - v2.X, v1.Y - v2.Y);
         }
 
+        public static IntVector2 operator -(IntVector2 v2) {
+            return new IntVector2(- v2.X, - v2.Y);
+        }
+
         public static IntVector2 operator *(int x, IntVector2 v2) {
             return new IntVector2(x * v2.X, x * v2.Y);
         }

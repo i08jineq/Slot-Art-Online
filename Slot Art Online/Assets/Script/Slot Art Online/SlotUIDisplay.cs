@@ -17,14 +17,14 @@ namespace DarkLordGame {
         /// </summary>
         /// <param name="itemSize">Item size.</param>
         /// <param name="dispayNumbers">minimum is 1.</param>
-        public override void Init(IntVector2 itemSize, IntVector2 direction, int displayNumbersX = 1, int displayNumbersY = 1) {
+        public override void Init(IntVector2 itemSize, IntVector2 direction) {
             this.imageList = new List<Image> ();
             this.slotItemSize = itemSize;
             this.spinDirection = direction;
-            int x = Mathf.Max(1, displayNumbersX);
-            int y = Mathf.Max(1, displayNumbersY);
             RectTransform trans = this.transform as RectTransform;
-            trans.sizeDelta = new Vector2(slotItemSize.X * x, slotItemSize.Y * y);
+            trans.sizeDelta = new Vector2(slotItemSize.X, slotItemSize.Y);
+            IntVector2 offset = new IntVector2(-direction.X * itemSize.X, -direction.Y * itemSize.Y);
+            trans.anchoredPosition = (Vector2)offset;
         }
 
         public override void AddImage(Sprite sprite) {
@@ -65,7 +65,16 @@ namespace DarkLordGame {
         }
 
         public override void UpdatePosition(IntVector2 position) {
-//            this.transform.localPosition = (Vector2)position;
+            int dx = spinDirection.X;
+            int dy = spinDirection.Y;
+            IntVector2 maxDistance = this.imageList.Count * this.slotItemSize;
+
+            for(int i = 0; i < this.imageList.Count; i++) {
+                IntVector2 pos = position + i * this.slotItemSize;
+                pos.X = pos.X % maxDistance.X * dx;
+                pos.Y = pos.Y % maxDistance.Y * dy;
+                this.imageList[i].transform.localPosition = (Vector2)pos;
+            }
         }
     }
 }
